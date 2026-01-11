@@ -18,7 +18,7 @@
                 <TextBlock Text="Verification Engine" FontSize="16" Foreground="#aaaaaa" HorizontalAlignment="Center"/>
             </StackPanel>
             
-            <ComboBox Name="LanguageBox" Grid.Column="1" SelectedIndex="0" Width="70" VerticalAlignment="Top">
+            <ComboBox Name="LanguageBox" Grid.Column="1" SelectedIndex="0" Width="70" VerticalAlignment="Top" SelectionChanged="OnLanguageChanged">
                 <ComboBoxItem Content="🇩🇪" Tag="de"/>
                 <ComboBoxItem Content="🇺🇸" Tag="en"/>
             </ComboBox>
@@ -26,14 +26,8 @@
 
         <!-- Input Area -->
         <Grid Grid.Row="1" ColumnDefinitions="Auto, *, Auto" Margin="0,0,0,20">
-            <ComboBox Name="CategoryBox" Grid.Column="0" SelectedIndex="0" Height="50" VerticalContentAlignment="Center" Margin="0,0,10,0" Width="200">
-                <ComboBoxItem Content="Allgemein" Tag="general"/>
-                <ComboBoxItem Content="News &amp; Politik" Tag="news_politics"/>
-                <ComboBoxItem Content="Medizin &amp; Gesundheit" Tag="medicine"/>
-                <ComboBoxItem Content="Wissenschaft &amp; Klima" Tag="science"/>
-                <ComboBoxItem Content="Finanzen &amp; Wirtschaft" Tag="finance"/>
-                <ComboBoxItem Content="Technik &amp; AI" Tag="tech"/>
-                <ComboBoxItem Content="Social Media &amp; Viral" Tag="social"/>
+            <ComboBox Name="CategoryBox" Grid.Column="0" Height="50" VerticalContentAlignment="Center" Margin="0,0,10,0" Width="200">
+                <!-- Items populated in code-behind -->
             </ComboBox>
             <TextBox Name="InputBox" Grid.Column="1" Watermark="Enter a claim or paste a link..." Height="50" FontSize="16" VerticalContentAlignment="Center" Margin="0,0,10,0"/>
             <Button Name="CheckButton" Grid.Column="2" Content="VERIFY" Height="50" Width="100" Background="#4e9eff" Foreground="White" FontWeight="Bold" Click="OnCheckClick"/>

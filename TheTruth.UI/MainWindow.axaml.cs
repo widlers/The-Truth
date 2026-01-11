@@ -11,6 +11,52 @@ public partial class MainWindow : Window
     {
         InitializeComponent();
         _service = new TheTruth.Core.VerificationService();
+        UpdateCategories("de"); // Default
+    }
+
+    private void OnLanguageChanged(object? sender, SelectionChangedEventArgs e)
+    {
+        if (CategoryBox == null) return; // Prevention for init
+
+        var box = sender as ComboBox;
+        var selectedItem = box?.SelectedItem as ComboBoxItem;
+        string lang = selectedItem?.Tag?.ToString() ?? "de";
+
+        // Preserve selected category index if possible
+        int oldIndex = CategoryBox.SelectedIndex;
+        if (oldIndex < 0) oldIndex = 0;
+
+        UpdateCategories(lang);
+
+        CategoryBox.SelectedIndex = oldIndex;
+    }
+
+    private void UpdateCategories(string lang)
+    {
+        CategoryBox.Items.Clear();
+
+        if (lang == "en")
+        {
+            CategoryBox.Items.Add(new ComboBoxItem { Content = "General", Tag = "general" });
+            CategoryBox.Items.Add(new ComboBoxItem { Content = "News & Politics", Tag = "news_politics" });
+            CategoryBox.Items.Add(new ComboBoxItem { Content = "Medicine & Health", Tag = "medicine" });
+            CategoryBox.Items.Add(new ComboBoxItem { Content = "Science & Climate", Tag = "science" });
+            CategoryBox.Items.Add(new ComboBoxItem { Content = "Finance & Economy", Tag = "finance" });
+            CategoryBox.Items.Add(new ComboBoxItem { Content = "Tech & AI", Tag = "tech" });
+            CategoryBox.Items.Add(new ComboBoxItem { Content = "Social Media & Viral", Tag = "social" });
+        }
+        else
+        {
+            CategoryBox.Items.Add(new ComboBoxItem { Content = "Allgemein", Tag = "general" });
+            CategoryBox.Items.Add(new ComboBoxItem { Content = "News & Politik", Tag = "news_politics" });
+            CategoryBox.Items.Add(new ComboBoxItem { Content = "Medizin & Gesundheit", Tag = "medicine" });
+            CategoryBox.Items.Add(new ComboBoxItem { Content = "Wissenschaft & Klima", Tag = "science" });
+            CategoryBox.Items.Add(new ComboBoxItem { Content = "Finanzen & Wirtschaft", Tag = "finance" });
+            CategoryBox.Items.Add(new ComboBoxItem { Content = "Technik & AI", Tag = "tech" });
+            CategoryBox.Items.Add(new ComboBoxItem { Content = "Social Media & Viral", Tag = "social" });
+        }
+
+        if (CategoryBox.SelectedIndex == -1) CategoryBox.SelectedIndex = 0;
     }
 
     public async void OnCheckClick(object? sender, RoutedEventArgs e)
