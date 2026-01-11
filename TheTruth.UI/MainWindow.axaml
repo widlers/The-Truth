@@ -1,0 +1,52 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="600"
+        x:Class="TheTruth.UI.MainWindow"
+        Title="The Truth - Verification Engine"
+        Width="1000" Height="700"
+        WindowStartupLocation="CenterScreen"
+        Background="#1e1e1e"
+        Foreground="#ffffff">
+
+    <Grid RowDefinitions="Auto, Auto, *" Margin="20">
+        <!-- Header -->
+        <Grid Grid.Row="0" Margin="0,0,0,20" ColumnDefinitions="*, Auto">
+            <StackPanel Grid.Column="0" HorizontalAlignment="Center">
+                <TextBlock Text="THE TRUTH" FontSize="32" FontWeight="Bold" Foreground="#4e9eff" HorizontalAlignment="Center"/>
+                <TextBlock Text="Verification Engine" FontSize="16" Foreground="#aaaaaa" HorizontalAlignment="Center"/>
+            </StackPanel>
+            
+            <ComboBox Name="LanguageBox" Grid.Column="1" SelectedIndex="0" Width="70" VerticalAlignment="Top">
+                <ComboBoxItem Content="🇩🇪" Tag="de"/>
+                <ComboBoxItem Content="🇺🇸" Tag="en"/>
+            </ComboBox>
+        </Grid>
+
+        <!-- Input Area -->
+        <Grid Grid.Row="1" ColumnDefinitions="Auto, *, Auto" Margin="0,0,0,20">
+            <ComboBox Name="CategoryBox" Grid.Column="0" SelectedIndex="0" Height="50" VerticalContentAlignment="Center" Margin="0,0,10,0" Width="200">
+                <ComboBoxItem Content="Allgemein" Tag="general"/>
+                <ComboBoxItem Content="News &amp; Politik" Tag="news_politics"/>
+                <ComboBoxItem Content="Medizin &amp; Gesundheit" Tag="medicine"/>
+                <ComboBoxItem Content="Wissenschaft &amp; Klima" Tag="science"/>
+                <ComboBoxItem Content="Finanzen &amp; Wirtschaft" Tag="finance"/>
+                <ComboBoxItem Content="Technik &amp; AI" Tag="tech"/>
+                <ComboBoxItem Content="Social Media &amp; Viral" Tag="social"/>
+            </ComboBox>
+            <TextBox Name="InputBox" Grid.Column="1" Watermark="Enter a claim or paste a link..." Height="50" FontSize="16" VerticalContentAlignment="Center" Margin="0,0,10,0"/>
+            <Button Name="CheckButton" Grid.Column="2" Content="VERIFY" Height="50" Width="100" Background="#4e9eff" Foreground="White" FontWeight="Bold" Click="OnCheckClick"/>
+        </Grid>
+
+        <!-- Results Area -->
+        <Border Grid.Row="2" Background="#252525" CornerRadius="10" Padding="15">
+            <ScrollViewer>
+                <StackPanel>
+                    <TextBlock Text="Analysis Results" FontSize="20" FontWeight="Bold" Margin="0,0,0,10"/>
+                    <TextBlock Name="ResultTextBlock" Text="Ready to verify." FontSize="14" TextWrapping="Wrap" Foreground="#cccccc"/>
+                </StackPanel>
+            </ScrollViewer>
+        </Border>
+    </Grid>
+</Window>

@@ -1,0 +1,23 @@
+# Visual Studio & .NET
+.vs/
+bin/
+obj/
+*.user
+*.suo
+*.userprefs
+*.launchSettings.json
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+venv/
+env/
+.env
+
+# OS
+Thumbs.db
+.DS_Store
+
+# Artifacts/Temp
+*.log
