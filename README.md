@@ -2,7 +2,11 @@
 
 **The-Truth** is an open-source, privacy-first desktop application that verifies claims by cross-referencing them with real-time internet search results and analyzing them using local AI (Ollama).
 
-![Screenshot](screenshot.png) *Add a screenshot here*
+![Dashboard](screenshot_main.png)
+*Modern Dashboard with Dark Mode*
+
+![Analysis Result](screenshot_result.png)
+*AI Analysis Result Example*
 
 ## 🚀 Features
 
