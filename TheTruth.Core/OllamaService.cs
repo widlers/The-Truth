@@ -1,5 +1,6 @@
 using System.Text;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using TheTruth.Core.Models;
 
 namespace TheTruth.Core;
@@ -127,5 +128,148 @@ public class OllamaService
         {
             return $"AI Fehler: {ex.Message}. (Läuft Ollama?)";
         }
+    }
+
+    public async Task TranslateSourcesAsync(List<SearchResultItem> sources)
+    {
+        string model = await GetBestModelAsync();
+        var sb = new StringBuilder();
+
+        sb.AppendLine("Translate the following Titles and Snippets into German (Deutsch).");
+        sb.AppendLine("Keep the meaning precise. Return ONLY a JSON array of objects with 'id', 'title_de', 'snippet_de'.");
+        sb.AppendLine();
+        sb.AppendLine("Input Data:");
+        for (int i = 0; i < sources.Count; i++)
+        {
+            sb.AppendLine($"{{\"id\": {i}, \"title\": \"{sources[i].Title}\", \"snippet\": \"{sources[i].Snippet}\"}}");
+        }
+        sb.AppendLine();
+        sb.AppendLine("Response format: [{\"id\": 0, \"title_de\": \"...\", \"snippet_de\": \"...\"}, ...]");
+
+        var request = new OllamaGenerateRequest
+        {
+            Model = model,
+            Prompt = sb.ToString(),
+            Stream = false,
+            Format = "json"
+        };
+
+        try
+        {
+            var jsonReq = JsonSerializer.Serialize(request);
+            var content = new StringContent(jsonReq, Encoding.UTF8, "application/json");
+
+            var response = await _httpClient.PostAsync($"{BaseUrl}/api/generate", content);
+            if (!response.IsSuccessStatusCode) return;
+
+            var responseString = await response.Content.ReadAsStringAsync();
+            var result = JsonSerializer.Deserialize<OllamaGenerateResponse>(responseString);
+            string aiText = result?.Response ?? "";
+
+            int start = aiText.IndexOf('[');
+            int end = aiText.LastIndexOf(']');
+            if (start >= 0 && end > start)
+            {
+                aiText = aiText.Substring(start, end - start + 1);
+                var translations = JsonSerializer.Deserialize<List<TranslationItem>>(aiText);
+
+                if (translations != null)
+                {
+                    foreach (var t in translations)
+                    {
+                        if (t.Id >= 0 && t.Id < sources.Count)
+                        {
+                            sources[t.Id].Title = "[Übersetzt] " + t.TitleDe;
+                            sources[t.Id].Snippet = t.SnippetDe;
+                        }
+                    }
+                }
+            }
+        }
+        catch (Exception)
+        {
+            // Ignore translation errors
+        }
+    }
+
+    private class TranslationItem
+    {
+        [JsonPropertyName("id")]
+        public int Id { get; set; }
+        [JsonPropertyName("title_de")]
+        public string TitleDe { get; set; } = "";
+        [JsonPropertyName("snippet_de")]
+        public string SnippetDe { get; set; } = "";
+    }
+    public async Task<string> AnalyzeImageAsync(string imagePath, string language = "en")
+    {
+        try
+        {
+            byte[] imageBytes = await File.ReadAllBytesAsync(imagePath);
+            string base64Image = Convert.ToBase64String(imageBytes);
+
+            // BakLLaVA works best with English prompts
+            string prompt = "Describe this image in detail. Are there any signs of manipulation or AI generation? Focus on visual artifacts, lighting inconsistencies, and anatomical errors.";
+
+            var request = new OllamaGenerateRequest
+            {
+                Model = "bakllava",
+                Prompt = prompt,
+                Stream = false,
+                Images = new List<string> { base64Image }
+            };
+
+            var json = JsonSerializer.Serialize(request);
+            var content = new StringContent(json, Encoding.UTF8, "application/json");
+
+            var response = await _httpClient.PostAsync($"{BaseUrl}/api/generate", content);
+            response.EnsureSuccessStatusCode();
+
+            var responseString = await response.Content.ReadAsStringAsync();
+            var result = JsonSerializer.Deserialize<OllamaGenerateResponse>(responseString);
+            string englishReport = result?.Response ?? "No response from vision model.";
+
+            // If German is requested, translate the English report
+            if (language == "de")
+            {
+                return await TranslateTextAsync(englishReport, "de");
+            }
+
+            return englishReport;
+        }
+        catch (Exception ex)
+        {
+            return $"Analysis Error: {ex.Message}";
+        }
+    }
+
+    private async Task<string> TranslateTextAsync(string text, string targetLang)
+    {
+        string model = await GetBestModelAsync();
+        string prompt = $"Translate the following text into German (Deutsch). Maintain the tone and technical details.\n\nText:\n{text}\n\nTranslation:";
+
+        var request = new OllamaGenerateRequest
+        {
+            Model = model,
+            Prompt = prompt,
+            Stream = false
+        };
+
+        try
+        {
+            var json = JsonSerializer.Serialize(request);
+            var content = new StringContent(json, Encoding.UTF8, "application/json");
+            var response = await _httpClient.PostAsync($"{BaseUrl}/api/generate", content);
+
+            if (response.IsSuccessStatusCode)
+            {
+                var responseString = await response.Content.ReadAsStringAsync();
+                var result = JsonSerializer.Deserialize<OllamaGenerateResponse>(responseString);
+                return result?.Response ?? text;
+            }
+        }
+        catch { }
+
+        return text; // Fallback to original
     }
 }

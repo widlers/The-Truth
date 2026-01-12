@@ -11,21 +11,24 @@
 ## 🚀 Features
 
 *   **Live Verification**: Enters a claim -> Searches the Web -> Analyzes with AI.
+*   **Visual Forensics (NEW)**: Media Check Tab allows analyzing images for fake content (Deepfakes, Photoshop) using BakLLaVA. Includes **Metadata Analysis** (EXIF, C2PA, AI Traces) and **Reverse Search** (Google Lens integration).
 *   **Privacy Focused**: Uses local AI (**Ollama**) and anonymous search (**DuckDuckGo**). No data leaves your machine for analysis.
 *   **Smart Search**: Specialized modes for *News*, *Medicine*, *Finance*, *Tech*, and *Social Media*.
+*   **News Feed**: Live news ticker. Automatically switches to German sources (**Tagesschau**, **Zeit**, **Spiegel**) when language is set to DE 🇩🇪.
 *   **Multilingual**: Full support for **English** 🇺🇸 and **German** 🇩🇪 (UI, Search Results, and AI Analysis).
 *   **Context Aware**: Understands political context (e.g., "Trump" = "US President").
 
 ## 🛠️ Technology Stack
 
 *   **Frontend**: C# / Avalonia UI (.NET 9)
-*   **Backend Search**: Python (`duckduckgo_search`)
-*   **Intelligence**: Local LLM via [Ollama](https://ollama.com/) (Llama3, Mistral, Gemma, etc.)
+*   **Backend Search**: Python (`duckduckgo_search`, `c2pa-python`, `Pillow`)
+*   **Intelligence**: Local LLM via [Ollama](https://ollama.com/) (Llama3, Mistral, BakLLaVA, etc.)
 
 ## 📦 Prerequisites
 
 1.  **Ollama**: Installed and running (`ollama serve`).
-    *   Pull a model: `ollama pull llama3` (or mistral, gemma).
+    *   Pull a text model: `ollama pull llama3` (or mistral).
+    *   Pull a vision model: `ollama pull bakllava` (for Media Check).
 2.  **.NET 9 SDK**: Required to build/run the UI.
 3.  **Python 3.x**: Required for the search engine.
 
@@ -52,11 +55,11 @@
 
 1.  **Start the App**.
 2.  **Select Language** (top right): 🇩🇪 or 🇺🇸.
-3.  **Select Category** (optional): e.g., *News*, *Finance*, *Social Media*.
-4.  **Enter a Claim**: e.g., *"The earth is flat"* or *"Inflation is rising due to X"*.
-5.  **Click VERIFY**.
-
-The AI will analyze the live search results and provide a verdict (**TRUE**, **FALSE**, **PARTIALLY TRUE**, etc.) with a justification and sources.
+3.  **Use Tabs**:
+    *   **VERIFY**: Enter a text claim (e.g., "Earth is flat") -> Click VERIFY.
+    *   **NEWS FEED**: View live news (Tagesschau/Zeit in DE, NYT/Guardian in EN).
+    *   **MEDIA CHECK**: Drag & Drop an image to analyze it for AI manipulation or fake context. Use "Check Metadata" for technical details.
+4.  **Drag & Drop**: You can drag images from the Media Check preview directly to your browser (e.g. into Google Lens).
 
 ## 🤝 Contributing
 

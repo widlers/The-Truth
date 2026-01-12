@@ -2,3 +2,8 @@ duckduckgo_search
 requests
 beautifulsoup4
 pytest
+python-dotenv
+requests_toolbelt
+c2pa-python
+Pillow
+feedparser

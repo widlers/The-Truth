@@ -2,45 +2,194 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:models="clr-namespace:TheTruth.Core.Models;assembly=TheTruth.Core"
         mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="600"
         x:Class="TheTruth.UI.MainWindow"
         Title="The Truth - Verification Engine"
+        Icon="avares://TheTruth.UI/Assets/icon.png"
         Width="1000" Height="700"
         WindowStartupLocation="CenterScreen"
         Background="#1e1e1e"
         Foreground="#ffffff">
 
-    <Grid RowDefinitions="Auto, Auto, *" Margin="20">
+    <Window.Styles>
+        <Style Selector="TabItem">
+            <Setter Property="Foreground" Value="#dddddd"/>
+            <Setter Property="FontSize" Value="16"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+        </Style>
+        <Style Selector="TabItem:selected">
+            <Setter Property="Foreground" Value="#ffffff"/>
+        </Style>
+        <Style Selector="TabItem:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="Foreground" Value="#ffffff"/>
+        </Style>
+        <!-- Brighten all Buttons text by default or specific selector -->
+        <Style Selector="Button">
+             <Setter Property="Foreground" Value="#ffffff"/>
+        </Style>
+        <Style Selector="Button:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="Background" Value="#5eaaff"/> <!-- Lighter Blue on hover -->
+            <Setter Property="Foreground" Value="#ffffff"/>
+        </Style>
+        <Style Selector="Button:disabled /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="Background" Value="#336699"/> <!-- Muted Blue when disabled -->
+            <Setter Property="Foreground" Value="#aaaaaa"/>
+        </Style>
+    </Window.Styles>
+    
+    <Grid RowDefinitions="Auto, *" Margin="20">
         <!-- Header -->
         <Grid Grid.Row="0" Margin="0,0,0,20" ColumnDefinitions="*, Auto">
             <StackPanel Grid.Column="0" HorizontalAlignment="Center">
                 <TextBlock Text="THE TRUTH" FontSize="32" FontWeight="Bold" Foreground="#4e9eff" HorizontalAlignment="Center"/>
-                <TextBlock Text="Verification Engine" FontSize="16" Foreground="#aaaaaa" HorizontalAlignment="Center"/>
+                <TextBlock Text="Verification Engine" FontSize="16" Foreground="#cccccc" HorizontalAlignment="Center"/>
             </StackPanel>
             
-            <ComboBox Name="LanguageBox" Grid.Column="1" SelectedIndex="0" Width="70" VerticalAlignment="Top" SelectionChanged="OnLanguageChanged">
+            <ComboBox Name="LanguageBox" Grid.Column="1" Width="70" VerticalAlignment="Top" SelectionChanged="OnLanguageChanged">
                 <ComboBoxItem Content="🇩🇪" Tag="de"/>
                 <ComboBoxItem Content="🇺🇸" Tag="en"/>
             </ComboBox>
         </Grid>
 
-        <!-- Input Area -->
-        <Grid Grid.Row="1" ColumnDefinitions="Auto, *, Auto" Margin="0,0,0,20">
-            <ComboBox Name="CategoryBox" Grid.Column="0" Height="50" VerticalContentAlignment="Center" Margin="0,0,10,0" Width="200">
-                <!-- Items populated in code-behind -->
-            </ComboBox>
-            <TextBox Name="InputBox" Grid.Column="1" Watermark="Enter a claim or paste a link..." Height="50" FontSize="16" VerticalContentAlignment="Center" Margin="0,0,10,0"/>
-            <Button Name="CheckButton" Grid.Column="2" Content="VERIFY" Height="50" Width="100" Background="#4e9eff" Foreground="White" FontWeight="Bold" Click="OnCheckClick"/>
-        </Grid>
+        <!-- Main Content -->
+        <TabControl Grid.Row="1" Margin="0" Padding="0">
+            <!-- Tab 1: Verify -->
+            <TabItem Header="VERIFY">
+                <Grid RowDefinitions="Auto, *" Margin="0,20,0,0">
+                    <!-- Input Area -->
+                    <Grid Grid.Row="0" ColumnDefinitions="Auto, *, Auto, Auto" Margin="0,0,0,20">
+                        <ComboBox Name="CategoryBox" Grid.Column="0" Height="50" VerticalContentAlignment="Center" Margin="0,0,10,0" Width="200">
+                            <!-- Items populated in code-behind -->
+                        </ComboBox>
+                        <TextBox Name="InputBox" Grid.Column="1" Watermark="Enter a claim or paste a link..." Height="50" FontSize="16" VerticalContentAlignment="Center" Margin="0,0,10,0"/>
+                        <Button Name="CheckButton" Grid.Column="2" Content="VERIFY" Height="50" Width="100" Background="#4e9eff" Foreground="White" FontWeight="Bold" Click="OnCheckClick" Margin="0,0,10,0"/>
+                        <Button Name="ClearButton" Grid.Column="3" Content="🗑" Height="50" Width="50" Background="#333333" Foreground="White" FontWeight="Bold" Click="OnClearClick" ToolTip.Tip="Clear Results"/>
+                    </Grid>
 
-        <!-- Results Area -->
-        <Border Grid.Row="2" Background="#252525" CornerRadius="10" Padding="15">
-            <ScrollViewer>
-                <StackPanel>
-                    <TextBlock Text="Analysis Results" FontSize="20" FontWeight="Bold" Margin="0,0,0,10"/>
-                    <TextBlock Name="ResultTextBlock" Text="Ready to verify." FontSize="14" TextWrapping="Wrap" Foreground="#cccccc"/>
-                </StackPanel>
-            </ScrollViewer>
-        </Border>
+                    <!-- Results Area -->
+                    <Border Grid.Row="1" Background="#252525" CornerRadius="10" Padding="15">
+                        <ScrollViewer>
+                            <StackPanel>
+                                <TextBlock Text="Analysis Results" FontSize="20" FontWeight="Bold" Margin="0,0,0,10"/>
+                                
+                                <!-- AI Verdict -->
+                                <TextBlock Name="AiVerdictText" Text="Ready to verify." FontSize="14" TextWrapping="Wrap" Foreground="#cccccc" Margin="0,0,0,20"/>
+                                
+                                <!-- Sources List -->
+                                <TextBlock Name="SourcesHeader" Text="Sources:" FontSize="16" FontWeight="Bold" Margin="0,0,0,5" Foreground="#aaaaaa" IsVisible="False"/>
+                                <ItemsControl Name="SourcesList">
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate x:DataType="models:SearchResultItem">
+                                            <Button Margin="0,0,0,10" Click="OnSourceClick" Tag="{Binding Url}" 
+                                                    Background="#333333" HorizontalAlignment="Stretch" HorizontalContentAlignment="Left" Cursor="Hand">
+                                                <StackPanel>
+                                                    <TextBlock Text="{Binding Title}" FontWeight="Bold" Foreground="#6eb3ff" TextWrapping="Wrap"/>
+                                                    <TextBlock Text="{Binding Url}" FontSize="12" Foreground="#999999" TextTrimming="CharacterEllipsis"/>
+                                                    <TextBlock Text="{Binding Snippet}" FontSize="11" Foreground="#dddddd" TextWrapping="Wrap" Margin="0,2,0,0" MaxLines="2" TextTrimming="CharacterEllipsis"/>
+                                                </StackPanel>
+                                            </Button>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                            </StackPanel>
+                        </ScrollViewer>
+                    </Border>
+                </Grid>
+            </TabItem>
+
+            <!-- Tab 2: News Feed -->
+            <TabItem Header="NEWS FEED">
+                <Grid RowDefinitions="Auto, *" Margin="0,20,0,0">
+                    <Grid Grid.Row="0" Margin="0,0,0,10" ColumnDefinitions="*, Auto, Auto">
+                         <TextBlock Text="Latest Global News" VerticalAlignment="Center" FontSize="18" FontWeight="Bold" Foreground="White" Margin="10,0,0,0"/>
+
+                        <ComboBox Name="SourceBox" Grid.Column="1" SelectedIndex="0" Width="200" Margin="0,0,10,0" VerticalAlignment="Center">
+                             <ComboBoxItem Content="All Sources" Tag="all"/>
+                             <ComboBoxItem Content="New York Times (US)" Tag="nyt"/>
+                             <ComboBoxItem Content="The Guardian (UK)" Tag="guardian"/>
+                        </ComboBox>
+                        
+                        <Button Grid.Column="2" Content="Refresh Feed" Background="#4e9eff" Foreground="White" Width="120" Click="OnRefreshFeed"/>
+                    </Grid>
+
+                    <Border Grid.Row="1" Background="#252525" CornerRadius="10" Padding="15">
+                        <ScrollViewer VerticalScrollBarVisibility="Visible">
+                            <StackPanel>
+                                <ItemsControl Name="FeedList">
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate x:DataType="models:SearchResultItem">
+                                            <Button Margin="0,0,0,15" Click="OnSourceClick" Tag="{Binding Url}" 
+                                                    Background="#333333" HorizontalAlignment="Stretch" HorizontalContentAlignment="Left" Cursor="Hand" Padding="10">
+                                                <StackPanel>
+                                                    <TextBlock Text="{Binding Title}" FontWeight="Bold" FontSize="16" Foreground="#ffffff" TextWrapping="Wrap"/>
+                                                    <StackPanel Orientation="Horizontal" Margin="0,5,0,5">
+                                                         <TextBlock Text="Live Source" Foreground="#6eb3ff" FontWeight="Bold" FontSize="12" Margin="0,0,10,0"/>
+                                                         <!-- We reuse Snippet for PublishedDate or abstract -->
+                                                         <TextBlock Text="{Binding Url}" Foreground="#999999" FontSize="12"/>
+                                                    </StackPanel>
+                                                    <TextBlock Text="{Binding Snippet}" FontSize="13" Foreground="#eeeeee" TextWrapping="Wrap" MaxLines="3" TextTrimming="CharacterEllipsis"/>
+                                                </StackPanel>
+                                            </Button>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                                <Button Name="LoadMoreButton" Content="Load More" HorizontalAlignment="Center" Margin="0,10,0,0" Click="OnLoadMoreFeed" IsVisible="False"/>
+                            </StackPanel>
+                        </ScrollViewer>
+                    </Border>
+                </Grid>
+            </TabItem>
+
+            <!-- Tab 3: Media Check -->
+            <TabItem Header="MEDIA CHECK">
+                <Grid RowDefinitions="Auto, Auto, *, Auto" Margin="20">
+                    <!-- Drop Zone -->
+                    <Border Grid.Row="0" Name="DropZone" BorderBrush="#444444" BorderThickness="2" CornerRadius="10" Background="#252525" Height="100" Margin="0,0,0,10">
+                        <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
+                             <TextBlock Text="Drag &amp; Drop Image here" FontSize="18" FontWeight="Bold" Foreground="#cccccc" HorizontalAlignment="Center"/>
+                             <Button Name="SelectFileButton" Content="Select File" HorizontalAlignment="Center" Margin="0,10,0,0"/>
+                        </StackPanel>
+                    </Border>
+                    
+                    <!-- Preview -->
+                    <Border Grid.Row="1" Background="#111111" CornerRadius="10" Height="200" Padding="10" Margin="0,0,0,10">
+                          <Image Name="PreviewImage" Stretch="Uniform" PointerPressed="OnPreviewImagePointerPressed" PointerMoved="OnPreviewImagePointerMoved"/>
+                    </Border>
+                         
+                    <!-- Analysis -->
+                    <Border Grid.Row="2" Background="#252525" CornerRadius="10" Padding="15" Margin="0,0,0,10">
+                         <!-- Replaced TextBlock with TextBox for Copy/Select support -->
+                         <TextBox Name="MediaVerdictText" Text="Waiting for analysis..." FontSize="14" TextWrapping="Wrap" 
+                                  Foreground="#cccccc" Background="Transparent" BorderThickness="0" IsReadOnly="True" 
+                                  AcceptsReturn="True">
+                             <TextBox.Styles>
+                                 <Style Selector="TextBox:focus /template/ Border#PART_BorderElement">
+                                     <Setter Property="Background" Value="Transparent"/>
+                                     <Setter Property="BorderBrush" Value="Transparent"/>
+                                 </Style>
+                                 <Style Selector="TextBox:pointerover /template/ Border#PART_BorderElement">
+                                     <Setter Property="Background" Value="Transparent"/>
+                                     <Setter Property="BorderBrush" Value="Transparent"/>
+                                 </Style>
+                             </TextBox.Styles>
+                         </TextBox>
+                    </Border>
+
+                        <!-- Actions -->
+                        <StackPanel Grid.Row="3" Orientation="Horizontal" HorizontalAlignment="Right" Spacing="10" Margin="0,10,0,0">
+                             <StackPanel Orientation="Horizontal" Spacing="5" VerticalAlignment="Center">
+                                 <TextBlock Text="Reverse Search:" VerticalAlignment="Center" Foreground="#888888" Margin="0,0,5,0" FontSize="12"/>
+                                 <Button Content="Google Lens" Tag="https://lens.google.com/" Click="OnExternalToolClick" Background="#333333" FontSize="11" Height="30"/>
+                                 <Button Content="TinEye" Tag="https://tineye.com/" Click="OnExternalToolClick" Background="#333333" FontSize="11" Height="30"/>
+                                 <Button Content="FotoForensics" Tag="https://fotoforensics.com/" Click="OnExternalToolClick" Background="#333333" FontSize="11" Height="30"/>
+                             </StackPanel>
+                             
+                             <Button Name="CheckMetadataButton" Content="CHECK METADATA" Background="#555555" Foreground="White" FontWeight="Bold" Width="150" Height="40" IsEnabled="False" Click="OnCheckMetadataClick" Margin="0,0,10,0"/>
+                             <Button Name="AnalyzeButton" Content="ANALYZE MEDIA" Background="#4e9eff" Foreground="White" FontWeight="Bold" Width="180" Height="40" IsEnabled="False" Click="OnAnalyzeMediaClick"/>
+                        </StackPanel>
+                </Grid>
+            </TabItem>
+        </TabControl>
     </Grid>
 </Window>

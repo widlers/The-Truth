@@ -12,6 +12,12 @@ public class OllamaGenerateRequest
 
     [JsonPropertyName("stream")]
     public bool Stream { get; set; } = false;
+
+    [JsonPropertyName("format")]
+    public string? Format { get; set; }
+
+    [JsonPropertyName("images")]
+    public List<string>? Images { get; set; }
 }
 
 public class OllamaGenerateResponse
